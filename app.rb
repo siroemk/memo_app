@@ -3,6 +3,12 @@ require 'sinatra/reloader'
 require 'json'
 
 get '/memos' do
+  @memos =
+    Dir.glob('data/*').map do |file|
+      File.open(file) do |memo|
+        JSON.load(memo)
+      end
+    end
   erb :index
 end
 
@@ -14,7 +20,7 @@ post '/memos' do
   File.open("data/memos_#{memo["id"]}.json", 'w') do |file|
     JSON.dump(memo, file)
   end
-  erb :detail
+  redirect to("/memos/#{memo["id"]}")
 end
 
 get '/memos/new' do
@@ -22,6 +28,12 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
+  memo =
+    File.open("data/memos_#{params['id']}.json") do |file|
+      JSON.load(file)
+    end
+  @title = memo["title"]
+  @content = memo["content"]
   erb :detail
 end
 

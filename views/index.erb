@@ -3,6 +3,8 @@
 </div>
 <section>
   <ul>
-    <li><a href="#">メモ1</a></li>
+    <% @memos.each do |memo| %>
+      <li><a href="<%= "/#{memo['id']}" %>"><%= memo['title'] %></a></li>
+    <% end %>
   </ul>
 </section>
