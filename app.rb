@@ -16,12 +16,9 @@ end
 post '/memos' do
   @title = params[:title]
   @content = params[:content]
-  @time = Time.now
 
-  memo = { "id" => SecureRandom.uuid, "title" => @title, "content"=> @content, "time" => @time }
-  File.open("data/memos_#{memo["id"]}.json", 'w') do |file|
-    JSON.dump(memo, file)
-  end
+  memo = { "id" => SecureRandom.uuid, "title" => @title, "content"=> @content, "time" => Time.now }
+  File.open("data/memos_#{memo["id"]}.json", 'w') { |file| JSON.dump(memo, file) }
   redirect to("/memos/#{memo["id"]}")
 end
 
@@ -31,20 +28,35 @@ end
 
 get '/memos/:id' do
   memo =
-    File.open("data/memos_#{params['id']}.json") do |file|
+    File.open("data/memos_#{params[:id]}.json") do |file|
       JSON.load(file)
     end
   @title = memo["title"]
   @content = memo["content"]
+  @id = memo["id"]
   erb :detail
 end
 
 get '/memos/:id/edit' do
   memo =
-  File.open("data/memos_#{params['id']}.json") do |file|
-    JSON.load(file)
-  end
+    File.open("data/memos_#{params[:id]}.json") do |file|
+      JSON.load(file)
+    end
   @title = memo["title"]
   @content = memo["content"]
+  @id = memo["id"]
   erb :edit
+end
+
+patch '/memos/:id/edit' do
+  File.open("data/memos_#{params[:id]}.json", "w") do |file|
+    memo = { "id" => params[:id], "title" => params[:title], "content"=> params[:content], "time" => Time.now }
+    JSON.dump(memo, file)
+  end
+  redirect to("/memos/#{params[:id]}")
+end
+
+delete '/memos/:id' do
+  File.delete("data/memos_#{params[:id]}.json")
+  redirect to("/memos")
 end
