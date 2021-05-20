@@ -2,6 +2,12 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'json'
 
+helpers do
+  def h(text)
+    Rack::Utils.escape_html(text)
+  end
+end
+
 get '/memos' do
   @memos =
     Dir.glob('data/*').map do |file|
@@ -14,8 +20,8 @@ get '/memos' do
 end
 
 post '/memos' do
-  @title = params[:title]
-  @content = params[:content]
+  @title = h(params[:title])
+  @content = h(params[:content])
 
   memo = { "id" => SecureRandom.uuid, "title" => @title, "content"=> @content, "time" => Time.now }
   File.open("data/memos_#{memo["id"]}.json", 'w') { |file| JSON.dump(memo, file) }
@@ -50,7 +56,7 @@ end
 
 patch '/memos/:id/edit' do
   File.open("data/memos_#{params[:id]}.json", "w") do |file|
-    memo = { "id" => params[:id], "title" => params[:title], "content"=> params[:content], "time" => Time.now }
+    memo = { "id" => params[:id], "title" => h(params[:title]), "content"=> h(params[:content]), "time" => Time.now }
     JSON.dump(memo, file)
   end
   redirect to("/memos/#{params[:id]}")
