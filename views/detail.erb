@@ -1,13 +1,14 @@
-<div class="content">
-  <section>
-    <h2><%= @title %></h2>
-    <p><%= @content %></p>
-  </section>
-  <form method="post" action="<%= @id %>">
-    <input type="hidden" name="_method" value="DELETE">
-    <input type="submit" value="削除">
-  </form>
-  <div>
-      <a href="/memos/<%= @id %>/edit">編集</a>
-  </div>
+<div class="main-header">
+  <h2 class="main-header__title">メモ詳細</h2>
+</div>
+<section>
+  <h2><%= h(@title) %></h2>
+  <p><%= h(@content) %></p>
+</section>
+<form method="post" action="<%= @id %>">
+  <input type="hidden" name="_method" value="DELETE">
+  <input type="submit" value="削除">
+</form>
+<div>
+  <a href="/memos/<%= @id %>/edit">編集</a>
 </div>

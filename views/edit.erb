@@ -1,8 +1,9 @@
-<div class="content">
-  <form method="post" action="/memos/<%= @id %>/edit">
-    <input type="text" name="title" value="<%= @title %>">
-    <input type="text" name="content" value="<%= @content %>">
-    <input type="hidden" name="_method" value="PATCH">
-    <input type="submit" value="変更">
-  </form>
+<div class="main-header">
+  <h2 class="main-header__title">メモを編集する</h2>
 </div>
+<form method="post" action="/memos/<%= @id %>/edit">
+  <input type="text" name="title" value="<%= h(@title) %>">
+  <input type="text" name="content" value="<%= h(@content) %>">
+  <input type="hidden" name="_method" value="PATCH">
+  <input type="submit" value="変更">
+</form>
