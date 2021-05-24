@@ -8,6 +8,10 @@ helpers do
   def h(text)
     Rack::Utils.escape_html(text)
   end
+
+  def get_file_path(id)
+    "data/memos_#{id}.json"
+  end
 end
 
 get '/' do
@@ -15,20 +19,13 @@ get '/' do
 end
 
 get '/memos' do
-  @memos =
-    Dir.glob('data/*').map do |file|
-      memo = File.open(file)
-      JSON.parse(memo.read)
-    end
+  @memos = Dir.glob('data/*').map { |file| JSON.parse(File.open(f).read) }
   @memos = @memos.sort_by { |file| file['time'] }
   erb :index
 end
 
 post '/memos' do
-  @title = params[:title]
-  @content = params[:content]
-
-  memo = { 'id' => SecureRandom.uuid, 'title' => @title, 'content' => @content, 'time' => Time.now }
+  memo = { 'id' => SecureRandom.uuid, 'title' => params[:title], 'content' => params[:content], 'time' => Time.now }
   File.open("data/memos_#{memo['id']}.json", 'w') { |file| JSON.dump(memo, file) }
   redirect to("/memos/#{memo['id']}")
 end
@@ -38,11 +35,8 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  if File.exist?("data/memos_#{params[:id]}.json")
-    memo = File.open("data/memos_#{params[:id]}.json") { |file| JSON.parse(file.read) }
-  else
-    redirect to('not_found')
-  end
+  file_path = get_file_path(params[:id])
+  File.exist?(file_path) ? (memo = File.open(file_path) { |file| JSON.parse(file.read) }) : (redirect to('not_found'))
   @title = memo['title']
   @content = memo['content']
   @id = memo['id']
@@ -50,11 +44,8 @@ get '/memos/:id' do
 end
 
 get '/memos/:id/edit' do
-  if File.exist?("data/memos_#{params[:id]}.json")
-    memo = File.open("data/memos_#{params[:id]}.json") { |file| JSON.parse(file.read) }
-  else
-    redirect to('not_found')
-  end
+  file_path = get_file_path(params[:id])
+  File.exist?(file_path) ? (memo = File.open(file_path) { |file| JSON.parse(file.read) }) : (redirect to('not_found'))
   @title = memo['title']
   @content = memo['content']
   @id = memo['id']
@@ -62,7 +53,8 @@ get '/memos/:id/edit' do
 end
 
 patch '/memos/:id/edit' do
-  File.open("data/memos_#{params[:id]}.json", 'w') do |file|
+  file_path = get_file_path(params[:id])
+  File.open(file_path, 'w') do |file|
     memo = { 'id' => params[:id], 'title' => params[:title], 'content' => params[:content], 'time' => Time.now }
     JSON.dump(memo, file)
   end
@@ -70,7 +62,8 @@ patch '/memos/:id/edit' do
 end
 
 delete '/memos/:id' do
-  File.delete("data/memos_#{params[:id]}.json")
+  file_path = get_file_path(params[:id])
+  File.delete(file_path)
   redirect to('/memos')
 end
 
