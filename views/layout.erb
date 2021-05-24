@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <mata charset="utf-8">
-  <title>メモアプリ</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-  <h1>メモアプリ</h1>
-  <%= yield %>
-</body>
+  <head>
+    <mata charset="utf-8">
+    <title>メモアプリ</title>
+    <link rel="stylesheet" href="/style.css" type='text/css'>
+  </head>
+  <body>
+    <main>
+      <header class="header">
+        <h1><a href="/memos" class="header__title">memo</a></h1>
+      </header>
+      <div class="main-content">
+        <%= yield %>
+      </div>
+    </main>
+    <footer class="footer">
+      <small class="footer-copyright">&copy; siroemk 2021</small>
+    </footer>
+  </body>
 </html>

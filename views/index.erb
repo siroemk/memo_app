@@ -1,13 +1,13 @@
 <div class="main-header">
   <h2 class="main-header__title">メモ一覧</h2>
 </div>
-<div>
-  <a href="/memos/new" class="new_button">追加</a>
-</div>
 <section class="memo-main">
+  <div class="memo-main__new-button">
+    <a href="/memos/new" class="new_button">メモ登録</a>
+  </div>
   <ul>
     <% @memos.each do |memo| %>
       <li class="memo-main__list"><a href="<%= "/memos/#{memo['id']}" %>" class="memo-main__link"><%= h(memo['title']) %></a></li>
     <% end %>
-   </ul>
+  </ul>
 </section>
