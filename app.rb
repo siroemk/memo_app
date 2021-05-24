@@ -38,10 +38,11 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  memo =
-    File.open("data/memos_#{params[:id]}.json") do |file|
-      JSON.parse(file.read)
-    end
+  if File.exist?("data/memos_#{params[:id]}.json")
+    memo = File.open("data/memos_#{params[:id]}.json") { |file| JSON.parse(file.read) }
+  else
+    redirect to('not_found')
+  end
   @title = memo['title']
   @content = memo['content']
   @id = memo['id']
@@ -49,10 +50,11 @@ get '/memos/:id' do
 end
 
 get '/memos/:id/edit' do
-  memo =
-    File.open("data/memos_#{params[:id]}.json") do |file|
-      JSON.parse(file.read)
-    end
+  if File.exist?("data/memos_#{params[:id]}.json")
+    memo = File.open("data/memos_#{params[:id]}.json") { |file| JSON.parse(file.read) }
+  else
+    redirect to('not_found')
+  end
   @title = memo['title']
   @content = memo['content']
   @id = memo['id']
@@ -70,4 +72,8 @@ end
 delete '/memos/:id' do
   File.delete("data/memos_#{params[:id]}.json")
   redirect to('/memos')
+end
+
+not_found do
+  erb :not_found
 end
