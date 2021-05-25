@@ -19,7 +19,7 @@ get '/' do
 end
 
 get '/memos' do
-  @memos = Dir.glob('data/*').map { |file| JSON.parse(File.open(f).read) }
+  @memos = Dir.glob('data/*').map { |file| JSON.parse(File.open(file).read) }
   @memos = @memos.sort_by { |file| file['time'] }
   erb :index
 end
