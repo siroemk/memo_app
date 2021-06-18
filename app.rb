@@ -2,6 +2,8 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
+require 'pg'
+require_relative 'memo'
 
 helpers do
   def h(text)
@@ -9,22 +11,20 @@ helpers do
   end
 end
 
+memo = Memo.new
+
 get '/' do
   redirect to('/memos')
 end
 
 get '/memos' do
-  connection = PG.connect(dbname: 'memos')
-  @memos = connection.exec('SELECT * FROM t_memos')
+  @memos = memo.read_all_memos
   erb :index
 end
 
 post '/memos' do
-  connection = PG.connect(dbname: 'memos')
-  title = params[:title]
-  content = params[:content]
-  memo = connection.exec('INSERT INTO t_memos (title, content) VALUES ($1, $2) RETURNING id' , [title, content])
-  id = memo.first['id']
+  created_memo = memo.create(params[:title], params[:content])
+  id = created_memo['id']
   redirect to("/memos/#{id}")
 end
 
@@ -33,37 +33,29 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  connection = PG.connect(dbname: 'memos')
-  id = params[:id]
-  @memo = connection.exec('SELECT * FROM t_memos WHERE id = $1', [id]).first
+  @memo = memo.read_a_memo(params[:id])
   @id = params[:id]
+  @title = @memo['title']
+  @content = @memo['content']
   erb :detail
 end
 
 get '/memos/:id/edit' do
-  connection = PG.connect(dbname: 'memos')
-  id = params[:id]
-  memo = connection.exec('SELECT * FROM t_memos WHERE id = $1', [id]).first
-  @title = memo['title']
-  @content = memo['content']
+  result = memo.read_a_memo(params[:id])
   @id = params[:id]
+  @title = result['title']
+  @content = result['content']
   erb :edit
 end
 
 patch '/memos/:id/edit' do
-  connection = PG.connect(dbname: 'memos')
-  id = params[:id]
-  title = params[:title]
-  content = params[:content]
   @id = params[:id]
-  connection.exec('UPDATE t_memos SET title = $1, content = $2 WHERE id = $3', [title, content, id])
-  redirect to("/memos/#{id}")
+  memo.edit(params[:title], params[:content], params[:id])
+  redirect to("/memos/#{params[:id]}")
 end
 
 delete '/memos/:id' do
-  connection = PG.connect(dbname: 'memos')
-  id = params[:id]
-  connection.exec('DELETE FROM t_memos WHERE id = $1', [id])
+  memo.delete(params[:id])
   redirect to('/memos')
 end
 
