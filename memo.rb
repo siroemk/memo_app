@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Memo Class. create, delete, and edit memos.
 class Memo
   def initialize
     @connection = PG.connect(dbname: 'memos')
