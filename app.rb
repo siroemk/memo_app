@@ -2,32 +2,30 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
-require 'json'
+require 'pg'
+require_relative 'memo'
 
 helpers do
   def h(text)
     Rack::Utils.escape_html(text)
   end
-
-  def get_file_path(id)
-    "data/memos_#{id}.json"
-  end
 end
+
+memo = Memo.new
 
 get '/' do
   redirect to('/memos')
 end
 
 get '/memos' do
-  @memos = Dir.glob('data/*').map { |file| JSON.parse(File.open(file).read) }
-  @memos = @memos.sort_by { |file| file['time'] }
+  @memos = memo.read_all_memos
   erb :index
 end
 
 post '/memos' do
-  memo = { 'id' => SecureRandom.uuid, 'title' => params[:title], 'content' => params[:content], 'time' => Time.now }
-  File.open("data/memos_#{memo['id']}.json", 'w') { |file| JSON.dump(memo, file) }
-  redirect to("/memos/#{memo['id']}")
+  created_memo = memo.create(params[:title], params[:content])
+  id = created_memo['id']
+  redirect to("/memos/#{id}")
 end
 
 get '/memos/new' do
@@ -35,35 +33,29 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  file_path = get_file_path(params[:id])
-  File.exist?(file_path) ? (memo = File.open(file_path) { |file| JSON.parse(file.read) }) : (redirect to('not_found'))
-  @title = memo['title']
-  @content = memo['content']
-  @id = memo['id']
+  @memo = memo.read_a_memo(params[:id])
+  @id = params[:id]
+  @title = @memo['title']
+  @content = @memo['content']
   erb :detail
 end
 
 get '/memos/:id/edit' do
-  file_path = get_file_path(params[:id])
-  File.exist?(file_path) ? (memo = File.open(file_path) { |file| JSON.parse(file.read) }) : (redirect to('not_found'))
-  @title = memo['title']
-  @content = memo['content']
-  @id = memo['id']
+  result = memo.read_a_memo(params[:id])
+  @id = params[:id]
+  @title = result['title']
+  @content = result['content']
   erb :edit
 end
 
 patch '/memos/:id/edit' do
-  file_path = get_file_path(params[:id])
-  File.open(file_path, 'w') do |file|
-    memo = { 'id' => params[:id], 'title' => params[:title], 'content' => params[:content], 'time' => Time.now }
-    JSON.dump(memo, file)
-  end
+  @id = params[:id]
+  memo.edit(params[:title], params[:content], params[:id])
   redirect to("/memos/#{params[:id]}")
 end
 
 delete '/memos/:id' do
-  file_path = get_file_path(params[:id])
-  File.delete(file_path)
+  memo.delete(params[:id])
   redirect to('/memos')
 end
 
